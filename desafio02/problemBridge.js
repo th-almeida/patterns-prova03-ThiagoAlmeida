@@ -1,23 +1,44 @@
-class TV {
-  turnOn() {
-    console.log("TV ligada.");
-  }
-  turnOff() {
-    console.log("TV desligada.");
+class CanvasRenderer {
+  renderShape(shape) {
+    console.log(`Desenhando ${shape} no Canvas`);
   }
 }
 
-class RemoteControl {
-  constructor() {
-    this.tv = new TV();
-  }
-
-  pressPowerButton(on) {
-    if (on) this.tv.turnOn();
-    else this.tv.turnOff();
+class SVGRenderer {
+  renderShape(shape) {
+    console.log(`Desenhando ${shape} em SVG`);
   }
 }
 
-const remote = new RemoteControl();
-remote.pressPowerButton(true);
-remote.pressPowerButton(false);
+class Shape {
+  constructor(renderer) {
+    this.renderer = renderer;
+  }
+}
+
+class Circle extends Shape {
+  draw() {
+    this.renderer.renderShape("círculo");
+  }
+}
+
+class Square extends Shape {
+  draw() {
+    this.renderer.renderShape("quadrado");
+  }
+}
+
+const canvas = new CanvasRenderer();
+const svg = new SVGRenderer();
+
+const c1 = new Circle(canvas);
+c1.draw();
+
+const c2 = new Circle(svg);
+c2.draw();
+
+const s1 = new Square(canvas);
+s1.draw();
+
+const s2 = new Square(svg);
+s2.draw();
