@@ -34,3 +34,15 @@ jobs:
       - name: Run Decorator
         run: npm run problem_decorator
 
+      - name: Run Start01 (Adapter)
+        run: npm run start01
+
+      - name: Run Start02 (Bridge)
+        run: npm run start02
+
+      - name: Run Start03 (Composite)
+        run: npm run start03
+
+      - name: Run Start04 (Decorator)
+        run: npm run start04
+
