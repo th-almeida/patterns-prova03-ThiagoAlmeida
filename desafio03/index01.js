@@ -52,6 +52,23 @@ class OrderRepository {
   }
 }
 
+class StrictOrderValidator extends OrderValidator {
+  validate(order) {
+    super.validate(order);
+    if (order.total > 10000) {
+      throw new Error('Order total exceeds maximum allowed value');
+    }
+    return true;
+  }
+}
+
+class DatabaseOrderRepository extends OrderRepository {
+  save(order) {
+    console.log(`[Database] Saving order ${order.id} to database`);
+    return super.save(order);
+  }
+}
+
 class OrderService {
   constructor(validator, repository) {
     this.validator = validator;
@@ -81,20 +98,27 @@ function main() {
   console.log('- OrderValidator: validates order data');
   console.log('- OrderRepository: handles data persistence');
   console.log('- OrderService: orchestrates business logic\n');
+  
+  console.log('Pattern 2: Open/Closed Principle (OCP)');
+  console.log('Classes are open for extension, closed for modification:\n');
+  console.log('- StrictOrderValidator extends OrderValidator without modifying it');
+  console.log('- DatabaseOrderRepository extends OrderRepository without modifying it');
+  console.log('- OrderService works with any validator/repository implementation\n');
 
-  const validator = new OrderValidator();
-  const repository = new OrderRepository();
-  const orderService = new OrderService(validator, repository);
+  console.log('Using basic validator and repository:');
+  const basicValidator = new OrderValidator();
+  const basicRepository = new OrderRepository();
+  const basicService = new OrderService(basicValidator, basicRepository);
 
   try {
-    const order1 = orderService.createOrder(
+    const order1 = basicService.createOrder(
       'ORD-001',
       'João Silva',
       ['Produto A', 'Produto B'],
       150.00
     );
 
-    const order2 = orderService.createOrder(
+    const order2 = basicService.createOrder(
       'ORD-002',
       'Maria Santos',
       ['Produto C'],
@@ -106,15 +130,37 @@ function main() {
     console.log(JSON.stringify(order2.getOrderInfo(), null, 2));
 
     console.log('\nAll orders in repository:');
-    const allOrders = orderService.getAllOrders();
+    const allOrders = basicService.getAllOrders();
     allOrders.forEach(order => {
       console.log(`Order ${order.id}: ${order.customerName} - R$ ${order.total}`);
     });
 
-    console.log('\nSearching for order ORD-001:');
-    const foundOrder = orderService.getOrder('ORD-001');
-    if (foundOrder) {
-      console.log(JSON.stringify(foundOrder.getOrderInfo(), null, 2));
+    console.log('\n' + '='.repeat(50));
+    console.log('\nDemonstrating OCP - Using extended classes:');
+    const strictValidator = new StrictOrderValidator();
+    const dbRepository = new DatabaseOrderRepository();
+    const extendedService = new OrderService(strictValidator, dbRepository);
+
+    const order3 = extendedService.createOrder(
+      'ORD-003',
+      'Pedro Costa',
+      ['Produto D'],
+      200.00
+    );
+
+    console.log('\nOrder created with extended validator and repository:');
+    console.log(JSON.stringify(order3.getOrderInfo(), null, 2));
+
+    console.log('\nTrying to create order exceeding limit (demonstrating extended validation):');
+    try {
+      extendedService.createOrder(
+        'ORD-004',
+        'Ana Lima',
+        ['Produto E'],
+        15000.00
+      );
+    } catch (error) {
+      console.log(`Validation error (as expected): ${error.message}`);
     }
 
   } catch (error) {
